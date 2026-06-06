@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barkod Sorgulama</title>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.6/umd/index.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #f0f4f8; min-height: 100vh; padding: 16px; }
+.app { max-width: 480px; margin: 0 auto; }
+.header { background: #1F4E79; border-radius: 12px; padding: 20px; margin-bottom: 16px; text-align: center; }
+.header h1 { font-size: 18px; font-weight: bold; color: #fff; }
+.header p { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 6px; }
+.card { background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.label { font-size: 12px; font-weight: bold; color: #555; margin-bottom: 8px; }
+.input-row { display: flex; gap: 8px; }
+#searchInput { flex: 1; height: 44px; border: 1px solid #ccc; border-radius: 8px; padding: 0 14px; font-size: 15px; background: #FFF9E6; outline: none; }
+#searchInput:focus { border-color: #1F4E79; }
+.scan-btn { width: 44px; height: 44px; border: 1px solid #ccc; border-radius: 8px; background: #f5f5f5; cursor: pointer; font-size: 22px; display: flex; align-items: center; justify-content: center; }
+.scan-btn:active { background: #1F4E79; color: #fff; }
+.result-table { width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden; }
+.result-table th { background: #1F4E79; color: #fff; font-size: 12px; padding: 10px; text-align: center; }
+.result-table td { padding: 14px 10px; text-align: center; font-size: 14px; border-bottom: 1px solid #eee; }
+.td-name { font-weight: bold; color: #1a1a1a; }
+.td-price { font-weight: bold; color: #1F4E79; font-size: 17px; background: #E2EFDA; }
+.td-found { color: #1a7a4a; background: #E2EFDA; }
+.td-waiting { color: #888; }
+.td-notfound { color: #c0392b; background: #FCEBEB; }
+.update-row { display: flex; margin-top: 2px; border-radius: 8px; overflow: hidden; }
+.update-label { background: #1F4E79; color: #fff; font-size: 12px; font-weight: bold; padding: 10px 14px; white-space: nowrap; }
+.update-val { background: #f5f5f5; font-size: 13px; color: #555; padding: 10px 14px; flex: 1; text-align: center; }
+.info { text-align: center; font-size: 13px; color: #888; padding: 8px 0; }
+.overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.88); z-index: 999; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.overlay.active { display: flex; }
+.video-wrap { position: relative; }
+#video { width: 300px; height: 220px; border-radius: 10px; object-fit: cover; display: block; }
+.frame { position: absolute; top: 0; left: 0; width: 300px; height: 220px; border: 2px solid #4CAF50; border-radius: 10px; pointer-events: none; }
+.overlay-hint { color: rgba(255,255,255,0.75); font-size: 13px; }
+.close-btn { color: #fff; font-size: 14px; cursor: pointer; padding: 10px 24px; border: 1px solid rgba(255,255,255,0.4); border-radius: 24px; background: transparent; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>📦 Barkod / Ürün Adı Sorgulama</h1>
+    <p>Barkod veya ürün adı girin — ikisi de çalışır</p>
+  </div>
+
+  <div class="card">
+    <div class="label">BARKOD / ÜRÜN ADI</div>
+    <div class="input-row">
+      <input type="text" id="searchInput" placeholder="Girin veya kamerayla okutun..." autocomplete="off" />
+      <button class="scan-btn" id="scanBtn" title="Kamerayla tara">📷</button>
+    </div>
+  </div>
+
+  <table class="result-table">
+    <thead>
+      <tr>
+        <th>ÜRÜN ADI</th>
+        <th>FİYAT</th>
+        <th>DURUM</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="td-name" id="resName">—</td>
+        <td class="td-price" id="resPrice">—</td>
+        <td class="td-waiting" id="resStatus">Bekliyor...</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="update-row" style="margin-top:8px">
+    <div class="update-label">SON GÜNCELLEME</div>
+    <div class="update-val" id="resDate">—</div>
+  </div>
+
+  <p class="info" id="infoBox">Veriler yükleniyor...</p>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="video-wrap">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="frame"></div>
+  </div>
+  <div class="overlay-hint">Barkodu yeşil çerçeveye getirin</div>
+  <button class="close-btn" id="closeBtn">Kapat</button>
+</div>
+
+<script>
+const SHEET_ID = '1mWEIkKr0Ddgz5uX7UTK4ZEVDM-CwZcd_mjSL3Hb7rZE';
+const API = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=Envanter';
+
+let products = [];
+
+async function loadData() {
+  try {
+    const res = await fetch(API);
+    const text = await res.text();
+    const json = JSON.parse(text.match(/setResponse\(([\s\S]*?)\);/)[1]);
+    const rows = json.table.rows;
+    products = rows.filter(r => r.c && r.c[0] && r.c[0].v).map(r => ({
+      barcode: String(r.c[0].v).trim(),
+      name: r.c[1] ? String(r.c[1].v || '') : '',
+      price: r.c[2] ? r.c[2].v : null,
+      updated: r.c[4] ? r.c[4].v : null
+    }));
+    document.getElementById('infoBox').textContent = products.length + ' ürün yüklendi.';
+  } catch(e) {
+    document.getElementById('infoBox').textContent = 'Veri yüklenemedi. Tablo herkese açık olmalı.';
+  }
+}
+
+function search(q) {
+  q = q.trim();
+  const nameEl = document.getElementById('resName');
+  const priceEl = document.getElementById('resPrice');
+  const statusEl = document.getElementById('resStatus');
+  const dateEl = document.getElementById('resDate');
+
+  if (!q) {
+    nameEl.textContent = '—'; priceEl.textContent = '—';
+    statusEl.textContent = 'Bekliyor...'; statusEl.className = 'td-waiting';
+    dateEl.textContent = '—'; return;
+  }
+
+  let found = products.find(p => p.barcode === q);
+  if (!found) found = products.find(p => p.name.toLowerCase().includes(q.toLowerCase()));
+
+  if (found) {
+    nameEl.textContent = found.name || '—';
+    priceEl.textContent = found.price != null ? Number(found.price).toFixed(2) + ' ₺' : '—';
+    statusEl.textContent = '✓ Bulundu'; statusEl.className = 'td-found';
+    dateEl.textContent = found.updated ? new Date(found.updated).toLocaleDateString('tr-TR') : '—';
+  } else {
+    nameEl.textContent = 'Bulunamadı'; priceEl.textContent = '—';
+    statusEl.textContent = '✗ Bulunamadı'; statusEl.className = 'td-notfound';
+    dateEl.textContent = '—';
+  }
+}
+
+document.getElementById('searchInput').addEventListener('input', e => search(e.target.value));
+
+let reader = null;
+document.getElementById('scanBtn').addEventListener('click', async () => {
+  document.getElementById('overlay').classList.add('active');
+  try {
+    reader = new ZXing.BrowserMultiFormatReader();
+    await reader.decodeFromVideoDevice(null, 'video', (result) => {
+      if (result) {
+        const val = result.getText();
+        document.getElementById('searchInput').value = val;
+        search(val);
+        stopCam();
+      }
+    });
+  } catch(e) {
+    alert('Kamera açılamadı: ' + e.message);
+    stopCam();
+  }
+});
+
+function stopCam() {
+  if (reader) { reader.reset(); reader = null; }
+  document.getElementById('overlay').classList.remove('active');
+}
+
+document.getElementById('closeBtn').addEventListener('click', stopCam);
+loadData();
+</script>
+</body>
+</html>
