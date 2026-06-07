@@ -10,76 +10,122 @@
 body { font-family: Arial, sans-serif; background: #f0f4f8; min-height: 100vh; padding: 16px; }
 .app { max-width: 480px; margin: 0 auto; }
 .header { background: #1F4E79; border-radius: 12px; padding: 20px; margin-bottom: 16px; text-align: center; }
-.header h1 { font-size: 18px; font-weight: bold; color: #fff; }
-.header p { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 6px; }
-.card { background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.header h1 { font-size: 17px; font-weight: bold; color: #fff; }
+.header p { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 4px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tab { flex: 1; padding: 10px; text-align: center; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; border: none; }
+.tab.active { background: #1F4E79; color: #fff; }
+.tab.inactive { background: #fff; color: #1F4E79; border: 1px solid #1F4E79; }
+.card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
 .label { font-size: 12px; font-weight: bold; color: #555; margin-bottom: 8px; }
 .input-row { display: flex; gap: 8px; }
-#searchInput { flex: 1; height: 44px; border: 1px solid #ccc; border-radius: 8px; padding: 0 14px; font-size: 15px; background: #FFF9E6; outline: none; }
-#searchInput:focus { border-color: #1F4E79; }
-.scan-btn { width: 44px; height: 44px; border: 1px solid #ccc; border-radius: 8px; background: #f5f5f5; cursor: pointer; font-size: 22px; display: flex; align-items: center; justify-content: center; }
+input[type=text], input[type=number] { height: 44px; border: 1px solid #ccc; border-radius: 8px; padding: 0 14px; font-size: 15px; outline: none; }
+input[type=text] { flex: 1; background: #FFF9E6; }
+input[type=text]:focus, input[type=number]:focus { border-color: #1F4E79; }
+.scan-btn { width: 44px; height: 44px; border: 1px solid #ccc; border-radius: 8px; background: #f5f5f5; cursor: pointer; font-size: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .scan-btn:active { background: #1F4E79; color: #fff; }
 .result-table { width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden; }
 .result-table th { background: #1F4E79; color: #fff; font-size: 12px; padding: 10px; text-align: center; }
-.result-table td { padding: 14px 10px; text-align: center; font-size: 14px; border-bottom: 1px solid #eee; }
-.td-name { font-weight: bold; color: #1a1a1a; }
-.td-price { font-weight: bold; color: #1F4E79; font-size: 17px; background: #E2EFDA; }
+.result-table td { padding: 12px 10px; text-align: center; font-size: 14px; }
+.td-name { font-weight: bold; color: #1a1a1a; background: #f5f5f5; }
+.td-price { font-weight: bold; color: #1F4E79; font-size: 16px; background: #E2EFDA; }
 .td-found { color: #1a7a4a; background: #E2EFDA; }
-.td-waiting { color: #888; }
+.td-waiting { color: #888; background: #f5f5f5; }
 .td-notfound { color: #c0392b; background: #FCEBEB; }
-.update-row { display: flex; margin-top: 2px; border-radius: 8px; overflow: hidden; }
-.update-label { background: #1F4E79; color: #fff; font-size: 12px; font-weight: bold; padding: 10px 14px; white-space: nowrap; }
-.update-val { background: #f5f5f5; font-size: 13px; color: #555; padding: 10px 14px; flex: 1; text-align: center; }
-.info { text-align: center; font-size: 13px; color: #888; padding: 8px 0; }
+.update-row { display: flex; margin-top: 6px; border-radius: 8px; overflow: hidden; }
+.update-label { background: #1F4E79; color: #fff; font-size: 11px; font-weight: bold; padding: 8px 12px; white-space: nowrap; }
+.update-val { background: #f5f5f5; font-size: 12px; color: #555; padding: 8px 12px; flex: 1; text-align: center; }
+.add-btn { width: 100%; margin-top: 10px; padding: 12px; background: #1F4E79; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+.add-btn:active { background: #163a5c; }
+.add-btn:disabled { background: #aaa; cursor: not-allowed; }
+.qty-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.qty-row label { font-size: 13px; font-weight: bold; color: #555; white-space: nowrap; }
+.qty-row input { width: 80px; text-align: center; background: #FFF9E6; }
+.info { text-align: center; font-size: 13px; color: #888; padding: 6px 0; }
+
+/* Sepet */
+.basket-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.basket-table th { background: #1F4E79; color: #fff; padding: 8px 6px; text-align: center; }
+.basket-table td { padding: 8px 6px; text-align: center; border-bottom: 1px solid #eee; }
+.basket-table tr:nth-child(even) td { background: #f5f8ff; }
+.del-btn { background: none; border: none; color: #c0392b; font-size: 18px; cursor: pointer; }
+.total-row { background: #1F4E79; color: #fff; font-weight: bold; font-size: 15px; }
+.total-row td { padding: 12px 6px; }
+.clear-btn { width: 100%; margin-top: 10px; padding: 11px; background: #c0392b; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
+.clear-btn:active { background: #922b21; }
+.empty-basket { text-align: center; color: #aaa; padding: 30px 0; font-size: 14px; }
+.badge { display: inline-block; background: #c0392b; color: #fff; border-radius: 10px; font-size: 11px; padding: 1px 6px; margin-left: 4px; }
+
+/* Kamera */
 .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.88); z-index: 999; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
 .overlay.active { display: flex; }
 .video-wrap { position: relative; }
 #video { width: 300px; height: 220px; border-radius: 10px; object-fit: cover; display: block; }
 .frame { position: absolute; top: 0; left: 0; width: 300px; height: 220px; border: 2px solid #4CAF50; border-radius: 10px; pointer-events: none; }
 .overlay-hint { color: rgba(255,255,255,0.75); font-size: 13px; }
-.close-btn { color: #fff; font-size: 14px; cursor: pointer; padding: 10px 24px; border: 1px solid rgba(255,255,255,0.4); border-radius: 24px; background: transparent; margin-top: 4px; }
+.close-btn { color: #fff; font-size: 14px; cursor: pointer; padding: 10px 24px; border: 1px solid rgba(255,255,255,0.4); border-radius: 24px; background: transparent; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <h1>Barkod / Ürün Adı Sorgulama</h1>
-    <p>Barkod veya ürün adı girin — ikisi de çalışır</p>
+    <h1>📦 Teknikel Envanter</h1>
+    <p>Barkod veya ürün adı ile sorgulama</p>
   </div>
 
-  <div class="card">
-    <div class="label">BARKOD / ÜRÜN ADI</div>
-    <div class="input-row">
-      <input type="text" id="searchInput" placeholder="Girin veya kamerayla okutun..." autocomplete="off" />
-      <button class="scan-btn" id="scanBtn" title="Kamerayla tara">📷</button>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('sorgu')">🔍 Sorgulama</button>
+    <button class="tab inactive" onclick="showTab('sepet')" id="sepetTab">🛒 Sepet</button>
+  </div>
+
+  <!-- SORGULAMA SAYFASI -->
+  <div id="tab-sorgu">
+    <div class="card">
+      <div class="label">BARKOD / ÜRÜN ADI</div>
+      <div class="input-row">
+        <input type="text" id="searchInput" placeholder="Girin veya kamerayla okutun..." autocomplete="off" />
+        <button class="scan-btn" id="scanBtn">📷</button>
+      </div>
     </div>
+
+    <table class="result-table">
+      <thead><tr><th>ÜRÜN ADI</th><th>FİYAT</th><th>DURUM</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="td-name" id="resName">—</td>
+          <td class="td-price" id="resPrice">—</td>
+          <td class="td-waiting" id="resStatus">Bekliyor...</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="update-row">
+      <div class="update-label">SON GÜNCELLEME</div>
+      <div class="update-val" id="resDate">—</div>
+    </div>
+
+    <div class="qty-row">
+      <label>Adet:</label>
+      <input type="number" id="qtyInput" value="1" min="1" max="9999" />
+    </div>
+
+    <button class="add-btn" id="addBtn" disabled onclick="addToBasket()">➕ Sepete Ekle</button>
+
+    <p class="info" id="infoBox">Veriler yükleniyor...</p>
   </div>
 
-  <table class="result-table">
-    <thead>
-      <tr>
-        <th>ÜRÜN ADI</th>
-        <th>FİYAT</th>
-        <th>DURUM</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="td-name" id="resName">—</td>
-        <td class="td-price" id="resPrice">—</td>
-        <td class="td-waiting" id="resStatus">Bekliyor...</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div class="update-row" style="margin-top:8px">
-    <div class="update-label">SON GÜNCELLEME</div>
-    <div class="update-val" id="resDate">—</div>
+  <!-- SEPET SAYFASI -->
+  <div id="tab-sepet" style="display:none">
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div id="basketContent">
+        <div class="empty-basket">Sepet boş<br><span style="font-size:11px">Sorgulama sayfasından ürün ekleyin</span></div>
+      </div>
+    </div>
+    <button class="clear-btn" onclick="clearBasket()">🗑️ Sepeti Temizle</button>
   </div>
-
-  <p class="info" id="infoBox">Veriler yükleniyor...</p>
 </div>
 
+<!-- Kamera -->
 <div class="overlay" id="overlay">
   <div class="video-wrap">
     <video id="video" autoplay playsinline muted></video>
@@ -94,6 +140,8 @@ const SHEET_ID = '1eWMyEWTweE5_3SaBvdauId7nzsrve5L5ML2TzizsuqQ';
 const API = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=Envanter';
 
 let products = [];
+let basket = [];
+let currentProduct = null;
 
 async function loadData() {
   try {
@@ -109,7 +157,7 @@ async function loadData() {
     }));
     document.getElementById('infoBox').textContent = products.length + ' ürün yüklendi.';
   } catch(e) {
-    document.getElementById('infoBox').textContent = 'Veri yüklenemedi. Tablo herkese açık olmalı.';
+    document.getElementById('infoBox').textContent = 'Veri yüklenemedi.';
   }
 }
 
@@ -119,11 +167,12 @@ function search(q) {
   const priceEl = document.getElementById('resPrice');
   const statusEl = document.getElementById('resStatus');
   const dateEl = document.getElementById('resDate');
+  const addBtn = document.getElementById('addBtn');
 
   if (!q) {
     nameEl.textContent = '—'; priceEl.textContent = '—';
     statusEl.textContent = 'Bekliyor...'; statusEl.className = 'td-waiting';
-    dateEl.textContent = '—'; return;
+    dateEl.textContent = '—'; addBtn.disabled = true; currentProduct = null; return;
   }
 
   let found = products.find(p => p.barcode === q);
@@ -134,11 +183,85 @@ function search(q) {
     priceEl.textContent = found.price != null ? Number(found.price).toFixed(2) + ' ₺' : '—';
     statusEl.textContent = '✓ Bulundu'; statusEl.className = 'td-found';
     dateEl.textContent = found.updated ? String(found.updated) : '—';
+    addBtn.disabled = false;
+    currentProduct = found;
   } else {
     nameEl.textContent = 'Bulunamadı'; priceEl.textContent = '—';
     statusEl.textContent = '✗ Bulunamadı'; statusEl.className = 'td-notfound';
-    dateEl.textContent = '—';
+    dateEl.textContent = '—'; addBtn.disabled = true; currentProduct = null;
   }
+}
+
+function addToBasket() {
+  if (!currentProduct) return;
+  const qty = parseInt(document.getElementById('qtyInput').value) || 1;
+  const existing = basket.find(i => i.barcode === currentProduct.barcode);
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    basket.push({ ...currentProduct, qty });
+  }
+  renderBasket();
+  updateBadge();
+  document.getElementById('searchInput').value = '';
+  document.getElementById('qtyInput').value = 1;
+  search('');
+  showTab('sepet');
+}
+
+function removeFromBasket(barcode) {
+  basket = basket.filter(i => i.barcode !== barcode);
+  renderBasket();
+  updateBadge();
+}
+
+function clearBasket() {
+  if (basket.length === 0) return;
+  if (confirm('Sepeti temizlemek istiyor musunuz?')) {
+    basket = [];
+    renderBasket();
+    updateBadge();
+  }
+}
+
+function renderBasket() {
+  const el = document.getElementById('basketContent');
+  if (basket.length === 0) {
+    el.innerHTML = '<div class="empty-basket">Sepet boş<br><span style="font-size:11px">Sorgulama sayfasından ürün ekleyin</span></div>';
+    return;
+  }
+  let total = 0;
+  let rows = basket.map((item, idx) => {
+    const subtotal = item.price != null ? item.price * item.qty : 0;
+    total += subtotal;
+    return `<tr>
+      <td>${item.name}</td>
+      <td>${item.price != null ? Number(item.price).toFixed(2) + ' ₺' : '—'}</td>
+      <td>${item.qty}</td>
+      <td>${item.price != null ? subtotal.toFixed(2) + ' ₺' : '—'}</td>
+      <td><button class="del-btn" onclick="removeFromBasket('${item.barcode}')">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `<table class="basket-table">
+    <thead><tr><th>Ürün</th><th>Fiyat</th><th>Adet</th><th>Toplam</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr class="total-row"><td colspan="3" style="text-align:right;padding-right:10px">GENEL TOPLAM</td><td colspan="2">${total.toFixed(2)} ₺</td></tr></tfoot>
+  </table>`;
+}
+
+function updateBadge() {
+  const count = basket.reduce((s, i) => s + i.qty, 0);
+  const tab = document.getElementById('sepetTab');
+  tab.innerHTML = count > 0 ? `🛒 Sepet <span class="badge">${count}</span>` : '🛒 Sepet';
+}
+
+function showTab(tab) {
+  document.getElementById('tab-sorgu').style.display = tab === 'sorgu' ? 'block' : 'none';
+  document.getElementById('tab-sepet').style.display = tab === 'sepet' ? 'block' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.className = 'tab ' + ((i === 0 && tab === 'sorgu') || (i === 1 && tab === 'sepet') ? 'active' : 'inactive');
+  });
 }
 
 document.getElementById('searchInput').addEventListener('input', e => search(e.target.value));
