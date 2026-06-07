@@ -246,7 +246,10 @@ function renderBasket() {
   el.innerHTML = `<table class="basket-table">
     <thead><tr><th>Ürün</th><th>Fiyat</th><th>Adet</th><th>Toplam</th><th></th></tr></thead>
     <tbody>${rows}</tbody>
-    <tfoot><tr style="background:#1F4E79"><td colspan="3" style="text-align:right;padding-right:10px;color:#fff;font-weight:bold">GENEL TOPLAM</td><td colspan="2" style="color:#fff;font-weight:bold;font-size:17px">${total.toFixed(2)} ₺</td></tr></tfoot>
+    <tfoot>
+      <tr style="background:#E2EFDA"><td colspan="3" style="text-align:right;padding-right:10px;color:#333;font-size:12px">KDV Hariç (%20)</td><td colspan="2" style="color:#333;font-size:13px">${total.toFixed(2)} ₺</td></tr>
+      <tr style="background:#1F4E79"><td colspan="3" style="text-align:right;padding-right:10px;color:#fff;font-weight:bold">KDV Dahil Toplam</td><td colspan="2" style="color:#fff;font-weight:bold;font-size:17px">${(total * 1.20).toFixed(2)} ₺</td></tr>
+    </tfoot>
   </table>`;
 }
 
