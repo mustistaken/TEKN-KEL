@@ -137,7 +137,7 @@ input[type=text]:focus, input[type=number]:focus { border-color: #1F4E79; }
 </div>
 
 <script>
-const SHEET_ID = '1PuPXSGaMwDrUburqx2UTS6M2tYgdeZofxG6BUKGohYc';
+const SHEET_ID = '15xx2zxaxOVeq5Tpmz-Wl93RiETk8MTh6VDiyT8NlBBs';
 const API = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=Envanter';
 
 let products = [], basket = [], currentProduct = null;
@@ -161,12 +161,13 @@ async function fetchSheet(sheetName, barcodeCol, nameCol, priceCol, updatedCol) 
 async function loadData() {
   try {
     document.getElementById('infoBox').textContent = 'Veriler yükleniyor...';
-    const [envanter,torc,makina] = await Promise.all([
+    const [envanter, torc, makina, trafimet] = await Promise.all([
       fetchSheet('Envanter', 0, 1, 2, 4),
       fetchSheet('MW Torç ve Sarfları', 0, 1, 4, 3),
-      fetchSheet('MW Kaynak Makinaları', 0, 1, 4, 3)
+      fetchSheet('MW Kaynak Makinaları', 0, 1, 4, 3),
+      fetchSheet('Trafimet', 0, 1, 2, null)
     ]);
-    products = [...envanter, ...torc, ...makina];
+    products = [...envanter, ...torc, ...makina, ...trafimet];
     document.getElementById('infoBox').textContent = products.length + ' ürün yüklendi.';
   } catch(e) {
     document.getElementById('infoBox').textContent = 'Veri yüklenemedi.';
