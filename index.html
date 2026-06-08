@@ -36,6 +36,16 @@ input[type=text]:focus, input[type=number]:focus { border-color: #1F4E79; }
 .qty-row label { font-size: 13px; font-weight: bold; color: #555; }
 .add-btn { width: 100%; margin-top: 10px; padding: 12px; background: #1F4E79; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 .add-btn:disabled { background: #aaa; cursor: not-allowed; }
+
+.suggestions { margin-top: 8px; max-height: 260px; overflow-y: auto; border-radius: 8px; }
+.suggestions:empty { display: none; }
+.sug-item { padding: 12px 14px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #fff; }
+.sug-item:hover, .sug-item:active { background: #E2EFDA; }
+.sug-item:last-child { border-bottom: none; }
+.sug-name { font-size: 13px; color: #222; flex: 1; text-align: left; }
+.sug-price { font-size: 13px; font-weight: bold; color: #1F4E79; white-space: nowrap; }
+.sug-barcode { font-size: 11px; color: #999; }
+.sug-count { padding: 8px 14px; font-size: 12px; color: #888; background: #f5f5f5; text-align: center; border-radius: 8px 8px 0 0; }
 .info { text-align: center; font-size: 13px; color: #888; padding: 6px 0; }
 .badge { display: inline-block; background: #c0392b; color: #fff; border-radius: 10px; font-size: 11px; padding: 1px 6px; margin-left: 4px; }
 .empty-basket { text-align: center; color: #aaa; padding: 30px 0; font-size: 14px; }
@@ -83,6 +93,7 @@ input[type=text]:focus, input[type=number]:focus { border-color: #1F4E79; }
         <input type="text" id="searchInput" placeholder="Girin veya kamerayla okutun..." autocomplete="off" />
         <button class="scan-btn" id="scanBtn">📷</button>
       </div>
+      <div id="suggestions" class="suggestions"></div>
     </div>
 
     <table class="res-table">
@@ -159,21 +170,12 @@ function formatDate(val) {
   return s;
 }
 
-function search(q) {
-  q = q.trim();
+function showResult(found) {
   var nameEl = document.getElementById('resName');
   var priceEl = document.getElementById('resPrice');
   var statusEl = document.getElementById('resStatus');
   var dateEl = document.getElementById('resDate');
   var addBtn = document.getElementById('addBtn');
-
-  if (!q) {
-    nameEl.textContent = '—'; priceEl.textContent = '—';
-    statusEl.textContent = 'Bekliyor...'; statusEl.style.color = '#888';
-    dateEl.textContent = '—'; addBtn.disabled = true; currentProduct = null; return;
-  }
-
-  var found = products.find(p => p.barcode === q) || products.find(p => p.name.toLowerCase().includes(q.toLowerCase()));
 
   if (found) {
     nameEl.textContent = found.name || '—';
@@ -188,6 +190,67 @@ function search(q) {
   }
 }
 
+function selectProduct(barcode) {
+  var p = products.find(x => x.barcode === barcode);
+  if (p) {
+    document.getElementById('searchInput').value = p.name;
+    document.getElementById('suggestions').innerHTML = '';
+    showResult(p);
+  }
+}
+
+function search(q) {
+  q = q.trim();
+  var sugEl = document.getElementById('suggestions');
+
+  if (!q) {
+    document.getElementById('resName').textContent = '—';
+    document.getElementById('resPrice').textContent = '—';
+    document.getElementById('resStatus').textContent = 'Bekliyor...';
+    document.getElementById('resStatus').style.color = '#888';
+    document.getElementById('resDate').textContent = '—';
+    document.getElementById('addBtn').disabled = true;
+    currentProduct = null;
+    sugEl.innerHTML = '';
+    return;
+  }
+
+  // Tam barkod eşleşmesi varsa direkt seç
+  var exact = products.find(p => p.barcode === q);
+  if (exact) {
+    showResult(exact);
+    sugEl.innerHTML = '';
+    return;
+  }
+
+  // İsimde veya barkodda geçen tüm ürünleri bul
+  var ql = q.toLowerCase();
+  var matches = products.filter(p => p.name.toLowerCase().includes(ql) || p.barcode.toLowerCase().includes(ql));
+
+  if (matches.length === 0) {
+    showResult(null);
+    sugEl.innerHTML = '';
+    return;
+  }
+
+  if (matches.length === 1) {
+    showResult(matches[0]);
+    sugEl.innerHTML = '';
+    return;
+  }
+
+  // Birden fazla eşleşme - liste göster
+  showResult(matches[0]);
+  var html = '<div class="sug-count">' + matches.length + ' eşleşme - seçin:</div>';
+  html += matches.slice(0, 30).map(function(p) {
+    return '<div class="sug-item" onclick="selectProduct(\'' + p.barcode + '\')">' +
+      '<span class="sug-name">' + p.name + '<br><span class="sug-barcode">' + p.barcode + '</span></span>' +
+      '<span class="sug-price">' + (p.price != null ? Number(p.price).toFixed(2) + ' ₺' : '—') + '</span>' +
+      '</div>';
+  }).join('');
+  sugEl.innerHTML = html;
+}
+
 function addToBasket() {
   if (!currentProduct) return;
   var qty = parseInt(document.getElementById('qtyInput').value) || 1;
@@ -196,6 +259,7 @@ function addToBasket() {
   renderBasket(); updateBadge();
   document.getElementById('searchInput').value = '';
   document.getElementById('qtyInput').value = 1;
+  document.getElementById('suggestions').innerHTML = '';
   search('');
   showTab('sepet');
 }
@@ -262,11 +326,25 @@ document.getElementById('scanBtn').addEventListener('click', async () => {
       ZXing.BarcodeFormat.EAN_8,
       ZXing.BarcodeFormat.UPC_A,
       ZXing.BarcodeFormat.UPC_E,
+      ZXing.BarcodeFormat.ITF,
+      ZXing.BarcodeFormat.CODABAR,
       ZXing.BarcodeFormat.DATA_MATRIX
     ];
     hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
     reader = new ZXing.BrowserMultiFormatReader(hints);
-    await reader.decodeFromVideoDevice(null, 'video', function(result) {
+
+    // Arka kamerayı yüksek çözünürlükte kullan
+    var constraints = {
+      audio: false,
+      video: {
+        facingMode: "environment",
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      }
+    };
+
+    await reader.decodeFromConstraints(constraints, 'video', function(result) {
       if (result) {
         var val = result.getText();
         document.getElementById('searchInput').value = val;
