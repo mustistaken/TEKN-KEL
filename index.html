@@ -137,22 +137,36 @@ input[type=text]:focus, input[type=number]:focus { border-color: #1F4E79; }
 </div>
 
 <script>
-const SHEET_ID = '1eWMyEWTweE5_3SaBvdauId7nzsrve5L5ML2TzizsuqQ';
+const SHEET_ID = '1PuPXSGaMwDrUburqx2UTS6M2tYgdeZofxG6BUKGohYc';
 const API = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=Envanter';
 
 let products = [], basket = [], currentProduct = null;
 
-async function loadData() {
+async function fetchSheet(sheetName, barcodeCol, nameCol, priceCol, updatedCol) {
+  const url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(sheetName);
   try {
-    const res = await fetch(API);
+    const res = await fetch(url);
     const text = await res.text();
     const json = JSON.parse(text.match(/setResponse\(([\s\S]*?)\);/)[1]);
-    products = json.table.rows.filter(r => r.c && r.c[0] && r.c[0].v).map(r => ({
-      barcode: String(r.c[0].v).trim(),
-      name: r.c[1] ? String(r.c[1].v || '') : '',
-      price: r.c[2] ? r.c[2].v : null,
-      updated: r.c[4] ? r.c[4].v : null
+    return json.table.rows.filter(r => r.c && r.c[nameCol] && r.c[nameCol].v).map(r => ({
+      barcode: barcodeCol !== null && r.c[barcodeCol] ? String(r.c[barcodeCol].v).trim() : '',
+      name: String(r.c[nameCol].v || ''),
+      price: r.c[priceCol] ? r.c[priceCol].v : null,
+      updated: updatedCol !== null && r.c[updatedCol] ? r.c[updatedCol].v : null,
+      sheet: sheetName
     }));
+  } catch(e) { return []; }
+}
+
+async function loadData() {
+  try {
+    document.getElementById('infoBox').textContent = 'Veriler yükleniyor...';
+    const [envanter, torc, makina] = await Promise.all([
+      fetchSheet('Envanter', 0, 1, 2, 4),
+      fetchSheet('Torç ve Sarfları', 0, 1, 2, 3),
+      fetchSheet('Kaynak Makinaları', 0, 1, 2, 3)
+    ]);
+    products = [...envanter, ...torc, ...makina];
     document.getElementById('infoBox').textContent = products.length + ' ürün yüklendi.';
   } catch(e) {
     document.getElementById('infoBox').textContent = 'Veri yüklenemedi.';
@@ -179,7 +193,8 @@ function showResult(found) {
 
   if (found) {
     nameEl.textContent = found.name || '—';
-    priceEl.textContent = found.price != null ? Number(found.price).toFixed(2) + ' ₺' : '—';
+    var currency = (found.sheet === 'Torç ve Sarfları' || found.sheet === 'Kaynak Makinaları') ? ' $' : ' ₺';
+    priceEl.textContent = found.price != null ? Number(found.price).toFixed(2) + currency : '—';
     statusEl.textContent = '✓ Bulundu'; statusEl.style.color = '#1a7a4a';
     dateEl.textContent = formatDate(found.updated);
     addBtn.disabled = false; currentProduct = found;
@@ -282,6 +297,7 @@ function renderBasket() {
   }
   var total = 0;
   var rows = basket.map(item => {
+    var cur = (item.sheet === 'Torç ve Sarfları' || item.sheet === 'Kaynak Makinaları') ? ' $' : ' ₺';
     var sub = item.price != null ? item.price * item.qty : 0;
     total += sub;
     return '<tr class="item-row"><td>' + item.name + '</td><td>' + (item.price != null ? Number(item.price).toFixed(2) + ' ₺' : '—') + '</td><td>' + item.qty + '</td><td>' + (item.price != null ? sub.toFixed(2) + ' ₺' : '—') + '</td><td><button class="del-btn" onclick="removeFromBasket(\'' + item.barcode + '\')">✕</button></td></tr>';
