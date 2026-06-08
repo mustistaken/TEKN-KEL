@@ -310,7 +310,6 @@ function renderBasket() {
     '<thead><tr><th>Ürün</th><th>Fiyat</th><th>Adet</th><th>Toplam</th><th></th></tr></thead>' +
     '<tbody>' + rows + '</tbody>' +
     '<tfoot>' +
-    '<tr class="kdv-hariç"><td colspan="3" style="text-align:right;padding-right:10px">KDV Hariç Ara Toplam</td><td colspan="2">' + total.toFixed(2) + ' ₺</td></tr>' +
     '<tr class="iskonto"><td colspan="3" style="text-align:right;padding-right:10px">%10 İskonto</td><td colspan="2">-' + iskonto.toFixed(2) + ' ₺</td></tr>' +
     '<tr class="iskonto-sonrasi"><td colspan="3" style="text-align:right;padding-right:10px">İskonto Sonrası Toplam</td><td colspan="2">' + iskontoluToplam.toFixed(2) + ' ₺</td></tr>' +
     '<tr class="kdv-dahil"><td colspan="3" style="text-align:right;padding-right:10px">KDV Dahil Toplam (%20)</td><td colspan="2">' + kdvDahil.toFixed(2) + ' ₺</td></tr>' +
@@ -382,4 +381,4 @@ document.getElementById('closeBtn').addEventListener('click', stopCam);
 loadData();
 </script>
 </body>
-  </html>
+</html>
