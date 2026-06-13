@@ -48,6 +48,14 @@ input[type=text]:focus, input[type=number]:focus { border-color: #1F4E79; }
 .badge { display: inline-block; background: #c0392b; color: #fff; border-radius: 10px; font-size: 11px; padding: 1px 6px; margin-left: 4px; }
 .empty-basket { text-align: center; color: #aaa; padding: 30px 0; font-size: 14px; }
 .clear-btn { width: 100%; margin-top: 10px; padding: 11px; background: #c0392b; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
+.iskonto-sec { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.iskonto-sec .label { font-size: 12px; font-weight: bold; color: #555; margin-bottom: 10px; }
+.iskonto-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.isk-btn { flex: 1; min-width: 60px; padding: 9px 6px; border: 2px solid #1F4E79; border-radius: 8px; background: #fff; color: #1F4E79; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; }
+.isk-btn.active { background: #1F4E79; color: #fff; }
+.isk-custom { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.isk-custom input { width: 80px; height: 38px; border: 2px solid #1F4E79; border-radius: 8px; padding: 0 10px; font-size: 14px; font-weight: bold; color: #1F4E79; text-align: center; outline: none; }
+.isk-custom span { font-size: 13px; color: #555; }
 .basket-wrap { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
 .basket-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .basket-tbl th { background: #1F4E79; color: #fff; padding: 10px 6px; text-align: center; }
@@ -115,6 +123,23 @@ input[type=text]:focus, input[type=number]:focus { border-color: #1F4E79; }
   </div>
 
   <div id="tab-sepet" style="display:none">
+    <div class="iskonto-sec">
+      <div class="label">İSKONTO ORANI</div>
+      <div class="iskonto-btns">
+        <button class="isk-btn active" onclick="setIskonto(0, this)">%0</button>
+        <button class="isk-btn" onclick="setIskonto(5, this)">%5</button>
+        <button class="isk-btn" onclick="setIskonto(10, this)">%10</button>
+        <button class="isk-btn" onclick="setIskonto(15, this)">%15</button>
+        <button class="isk-btn" onclick="setIskonto(20, this)">%20</button>
+        <button class="isk-btn" onclick="setIskonto(25, this)">%25</button>
+        <button class="isk-btn" onclick="setIskonto(30, this)">%30</button>
+      </div>
+      <div class="isk-custom">
+        <span>Özel:</span>
+        <input type="number" id="iskontoCustom" min="0" max="100" placeholder="0" oninput="setIskontoCustom(this.value)" />
+        <span>%</span>
+      </div>
+    </div>
     <div class="basket-wrap" id="basketWrap">
       <div class="empty-basket">Sepet boş<br><span style="font-size:11px">Sorgulama sayfasından ürün ekleyin</span></div>
     </div>
@@ -134,7 +159,24 @@ input[type=text]:focus, input[type=number]:focus { border-color: #1F4E79; }
 <script>
 const SHEET_ID = '1OAgPlsdFpEOa1FF4FFAsEaUdyZEtpZZ32IMpbEG76cM';
 
-let products = [], basket = [], currentProduct = null;
+let products = [], basket = [], currentProduct = null, iskontoOrani = 0;
+
+function setIskonto(val, btn) {
+  iskontoOrani = val;
+  document.getElementById('iskontoCustom').value = '';
+  document.querySelectorAll('.isk-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderBasket();
+}
+
+function setIskontoCustom(val) {
+  var n = parseFloat(val);
+  if (isNaN(n) || n < 0) n = 0;
+  if (n > 100) n = 100;
+  iskontoOrani = n;
+  document.querySelectorAll('.isk-btn').forEach(function(b){ b.classList.remove('active'); });
+  renderBasket();
+}
 
 // Her sayfa için sütun yapısı: (sheetName, barcodeCol, nameCol, priceCol, updatedCol)
 // priceCol: TL fiyatın bulunduğu sütun indeksi
@@ -320,7 +362,7 @@ function renderBasket() {
       '<td><button class="del-btn" onclick="removeFromBasket(' + idx + ')">✕</button></td></tr>';
   }).join('');
 
-  var iskonto       = total * 0.10;
+  var iskonto       = total * (iskontoOrani / 100);
   var iskontoluToplam = total - iskonto;
   var kdvDahil      = iskontoluToplam * 1.20;
 
@@ -328,8 +370,8 @@ function renderBasket() {
     '<thead><tr><th>Ürün</th><th>Fiyat</th><th>Adet</th><th>Toplam</th><th></th></tr></thead>' +
     '<tbody>' + rows + '</tbody>' +
     '<tfoot>' +
-    '<tr class="iskonto"><td colspan="3" style="text-align:right;padding-right:10px">%10 İskonto</td><td colspan="2">-' + formatPrice(iskonto) + '</td></tr>' +
-    '<tr class="iskonto-sonrasi"><td colspan="3" style="text-align:right;padding-right:10px">İskonto Sonrası Toplam</td><td colspan="2">' + formatPrice(iskontoluToplam) + '</td></tr>' +
+    (iskontoOrani > 0 ? '<tr class="iskonto"><td colspan="3" style="text-align:right;padding-right:10px">%' + iskontoOrani + ' İskonto</td><td colspan="2">-' + formatPrice(iskonto) + '</td></tr>' +
+    '<tr class="iskonto-sonrasi"><td colspan="3" style="text-align:right;padding-right:10px">İskonto Sonrası Toplam</td><td colspan="2">' + formatPrice(iskontoluToplam) + '</td></tr>' : '') +
     '<tr class="kdv-dahil"><td colspan="3" style="text-align:right;padding-right:10px">KDV Dahil Toplam (%20)</td><td colspan="2">' + formatPrice(kdvDahil) + '</td></tr>' +
     '</tfoot></table>';
 }
